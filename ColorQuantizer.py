@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import operator
 
-
+from ColorIdentifier import ColorIdentifier
 
 class ColorQuanatizer:
 	original_color = None
@@ -73,15 +73,13 @@ class ColorQuanatizer:
 
 	def showFrequencyBar(self, percentageList=None):
 		if percentageList == None:
-			percentageList = self.percentageList
+			percentageList = list(self.percentageList)
 
 		# culumulate percentages
 		currPercentage = 0.0
 		for i in range(0, len(percentageList)):
 			currPercentage += percentageList[i][1]
 			percentageList[i] = (percentageList[i][0], currPercentage)
-
-		print percentageList
 
 		# show graphical representation
 		barHeight = 50
@@ -109,9 +107,20 @@ class ColorQuanatizer:
 #   Main Entry Point
 #
 if __name__ == '__main__':
-	im = cv2.imread("flower.jpg")
+	im = cv2.imread("rainbow_flower.jpg")
 	cv2.imshow("Original Image", im)
 	quantizer = ColorQuanatizer()
-	quantizer.quantize(im)
+	quantizer.quantize(im, 8)
 	quantizer.showFrequencyBar()
+
+	for i in range(0, len(quantizer.percentageList)):
+		(B, G, R) = quantizer.percentageList[i][0]
+		rgbValue = (R, G, B)
+		frequency = quantizer.percentageList[i][1]
+		colorName0 = ColorIdentifier.identify(rgbValue, 0)
+		colorName1 = ColorIdentifier.identify(rgbValue, 1)
+		colorName2 = ColorIdentifier.identify(rgbValue, 2)
+		colorName2 = ''.join(i for i in colorName2 if not i.isdigit())
+		print colorName0, ",", colorName1, ",", colorName2, " - ", rgbValue, " - ", frequency*100, "%"
+
 	cv2.waitKey()
