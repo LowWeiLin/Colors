@@ -24,8 +24,6 @@ class ColorQuanatizer:
 		self.colorFreqMap = self.mapColorFrequencies(self.quantized_img)
 		self.percentageList = self.getPercentageList()
 
-		self.showFrequencyBar(self.percentageList)
-
 
 	def resize(self, image, longestEdgeLength):
 		# resize image such that the longest edge is longestEdgeLength px
@@ -73,7 +71,10 @@ class ColorQuanatizer:
 		return sortedList
 
 
-	def showFrequencyBar(self, percentageList):
+	def showFrequencyBar(self, percentageList=None):
+		if percentageList == None:
+			percentageList = self.percentageList
+
 		# culumulate percentages
 		currPercentage = 0.0
 		for i in range(0, len(percentageList)):
@@ -100,7 +101,7 @@ class ColorQuanatizer:
 			for y in range(0, barHeight):
 				barImg[y][x] = color
 
-		cv2.imshow("bar", barImg)
+		cv2.imshow("Color Frequency Bar", barImg)
 
 
 
@@ -109,6 +110,8 @@ class ColorQuanatizer:
 #
 if __name__ == '__main__':
 	im = cv2.imread("flower.jpg")
-	cv2.imshow("original image", im)
-	ColorQuanatizer().quantize(im)
+	cv2.imshow("Original Image", im)
+	quantizer = ColorQuanatizer()
+	quantizer.quantize(im)
+	quantizer.showFrequencyBar()
 	cv2.waitKey()
