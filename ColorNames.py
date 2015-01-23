@@ -78,7 +78,7 @@ class ColorNames:
     WebColorMap["DarkKhaki"]            = "#BDB76B"
     WebColorMap["DarkMagenta"]          = "#8B008B"
     WebColorMap["DarkOliveGreen"]       = "#556B2F"
-    WebColorMap["Darkorange"]           = "#FF8C00"
+    WebColorMap["DarkOrange"]           = "#FF8C00"
     WebColorMap["DarkOrchid"]           = "#9932CC"
     WebColorMap["DarkRed"]              = "#8B0000"
     WebColorMap["DarkSalmon"]           = "#E9967A"

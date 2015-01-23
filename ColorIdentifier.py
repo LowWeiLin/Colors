@@ -19,8 +19,8 @@ class ColorIdentifier:
 
 
 	@staticmethod
-	def findNearestBasicColorName((R,G,B)):
-		return ColorIdentifier.findNearestColorName((R,G,B), ColorNames.BasicColorMap)
+	def findNearestHtmlColorName((R,G,B)):
+		return ColorIdentifier.findNearestColorName((R,G,B), ColorNames.HtmlColorMap)
 
 
 	@staticmethod
@@ -37,14 +37,14 @@ class ColorIdentifier:
 		for d in Map:
 			r, g, b = ColorIdentifier.rgbFromStr(Map[d])
 			# Convert to cielab color space
-			r, g, b = r, g, b = ColorConversion.rgb_to_cielab(r,g,b)
+			r, g, b = ColorConversion.rgb_to_cielab(r,g,b)
 
 			diff = abs(R -r)*256 + abs(G-g)* 256 + abs(B- b)* 256
 			if mindiff is None or diff < mindiff:
 				mindiff = diff
 				mincolorname = d
-		return mincolorname
 
+		return mincolorname
 
 
 #
@@ -52,6 +52,6 @@ class ColorIdentifier:
 #
 if __name__ == '__main__':
 	color = (100, 150, 50)
-	print ColorIdentifier.findNearestBasicColorName(color)
+	print ColorIdentifier.findNearestHtmlColorName(color)
 	print ColorIdentifier.findNearestWebColorName(color)
 	print ColorIdentifier.identify(color)
