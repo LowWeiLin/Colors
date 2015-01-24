@@ -3,8 +3,10 @@ import cv2
 import operator
 
 from ColorIdentifier import ColorIdentifier
+import ColorConversion
 
-class ColorQuanatizer:
+
+class ColorQuantizer:
 	original_color = None
 	original_small_color = None
 
@@ -14,7 +16,12 @@ class ColorQuanatizer:
 	colorFreqMap = None
 	percentageList = None
 
+	K = None
+	compactness = 0
+	mean = 0
+
 	def quantize(self, image, K=3):
+		self.K = K
 		self.original_color = image
 		self.original_small_color = self.resize(image, 100)
 		
@@ -24,6 +31,41 @@ class ColorQuanatizer:
 		self.colorFreqMap = self.mapColorFrequencies(self.quantized_img)
 		self.percentageList = self.getPercentageList()
 
+	def optimalK(self, im, sampleK=8):
+		quantizer = {}
+
+		for k in range(1, sampleK+1):
+			quantizer[k] = ColorQuantizer()
+			quantizer[k].quantize(im, k)
+
+
+		b0 = np.array((2, quantizer[2].compactness))
+		b1 = np.array((sampleK, quantizer[sampleK].compactness))
+		b = b1 - b0
+		b = b/np.linalg.norm(b)
+
+		dist = {}
+		maxDist = 0
+		maxDistK = 3
+
+		for k in range(3, sampleK):
+			pt = np.array((k, quantizer[k].compactness))
+			p = pt - b0
+			dist[k] = np.linalg.norm(p - b*(np.dot(p, b)))
+			# print "K =", k, "d =", dist[k]
+
+			if k == 3:
+				maxDist = dist[k]
+				maxDistK = 3
+			elif dist[k] > maxDist:
+				maxDist = dist[k]
+				maxDistK = k
+
+		# print "Max dist =", maxDist
+		print "Optimal K =", maxDistK
+
+		quantizer[maxDistK].showFrequencyBar()
+		quantizer[maxDistK].printColorNames()
 
 	def resize(self, image, longestEdgeLength):
 		# resize image such that the longest edge is longestEdgeLength px
@@ -37,7 +79,9 @@ class ColorQuanatizer:
 		Z = np.float32(Z)
 		# define criteria, number of clusters(K) and apply kmeans()
 		criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-		ret,label,center = cv2.kmeans(Z, K, criteria, 3, cv2.KMEANS_RANDOM_CENTERS)
+		ret,label,center = cv2.kmeans(Z, K, criteria, 5, cv2.KMEANS_RANDOM_CENTERS)
+		self.compactness = ret
+
 		# Now convert back into uint8, and make original image
 		center = np.uint8(center)
 		res = center[label.flatten()]
@@ -102,25 +146,27 @@ class ColorQuanatizer:
 		cv2.imshow("Color Frequency Bar", barImg)
 
 
+	def printColorNames(self):
+		for i in range(0, len(self.percentageList)):
+			(B, G, R) = self.percentageList[i][0]
+			rgbValue = (R, G, B)
+			frequency = self.percentageList[i][1]
+			colorName0 = ColorIdentifier.identify(rgbValue, 0)
+			colorName1 = ColorIdentifier.identify(rgbValue, 1)
+			colorName2 = ColorIdentifier.identify(rgbValue, 2)
+			# Remove digits before displaying
+			#colorName2 = ''.join(i for i in colorName2 if not i.isdigit())
+			print "[", frequency*100, "% ]", colorName0, ",", colorName1, ",", colorName2, " - ", rgbValue
 
 #
 #   Main Entry Point
 #
 if __name__ == '__main__':
-	im = cv2.imread("rainbow_flower.jpg")
+	im = cv2.imread("flower.jpg")
 	cv2.imshow("Original Image", im)
-	quantizer = ColorQuanatizer()
-	quantizer.quantize(im, 8)
-	quantizer.showFrequencyBar()
 
-	for i in range(0, len(quantizer.percentageList)):
-		(B, G, R) = quantizer.percentageList[i][0]
-		rgbValue = (R, G, B)
-		frequency = quantizer.percentageList[i][1]
-		colorName0 = ColorIdentifier.identify(rgbValue, 0)
-		colorName1 = ColorIdentifier.identify(rgbValue, 1)
-		colorName2 = ColorIdentifier.identify(rgbValue, 2)
-		colorName2 = ''.join(i for i in colorName2 if not i.isdigit())
-		print colorName0, ",", colorName1, ",", colorName2, " - ", rgbValue, " - ", frequency*100, "%"
+	quantizer = ColorQuantizer()
+	quantizer.optimalK(im, 8)
+
 
 	cv2.waitKey()
