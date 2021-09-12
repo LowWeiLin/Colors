@@ -10,7 +10,7 @@ Colors! Enables you to: <br>
 
 ## What?
 
-![alt tag](./Documentation/images/balls.png)
+![alt tag](./documentation/images/balls.png)
 
 Optimal K = 4 <br>
 [ 39.1492537313 % ] Gray , SteelBlue , SteelBlue - (69, 129, 176) <br>
